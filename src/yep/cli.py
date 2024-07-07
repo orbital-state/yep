@@ -1,6 +1,6 @@
 import os
 import typer
-from .project import Project
+from .project import YepProject
 
 app = typer.Typer()
 
@@ -10,13 +10,14 @@ def init(project_path: str = ''):
     """Initialize yep project."""
     if not project_path:
         project_path = os.getcwd()
-    project = Project(project_path)
+    project = YepProject(project_path)
+
 
 
 @app.command()
-def run(username: str):
-    print(f"Deleting user: {username}")
-
+def run(target: str = 'local'):
+    print(f"Run pipeline on {target}.")
+    
 
 def main():
     app()

@@ -3,7 +3,7 @@ import os
 from pathlib import Path
 
 
-class Project:
+class YepProject:
 
     def __init__(self, location_path: str):
         self._location_path = Path(location_path)
@@ -13,6 +13,11 @@ class Project:
     def yep_folder_path(self):
         return self._location_path / '.yep'
     
-    def initialize(self):
-        """Populate .yep folder if it does not exists."""
-
+    def initialize(self) -> bool:
+        """Populate `.yep` folder if it does not exists."""
+        if self.yep_folder_path().exists():
+            print(f"Project '{self.name}' already initialized.")
+            return False
+        # Create '.yep' folder if it does not exist
+        os.makedirs(self.yep_folder_path())
+        return True
