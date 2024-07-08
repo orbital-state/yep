@@ -27,7 +27,11 @@ class LocalTarget(BaseTarget):
         if wrapper_path.exists() and not update:
             print(f"Wrapper already exists at: {wrapper_path}")
             return
-        print(f"Wrapper generated at: {wrapper_path}")
+        print(f"Wrapper will be generated at: {wrapper_path}")
+        # touch '__init__.py' file in target folder
+        init_file = self.target_folder / "__init__.py"
+        if not init_file.exists():
+            init_file.touch()
 
         # Reflect pipeline structure from source code
         yep_pipeline = self.reflect_pipeline(pipeline_name, pipeline_config, pipeline_file_path)

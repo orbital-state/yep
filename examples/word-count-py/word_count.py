@@ -1,7 +1,10 @@
 # word_count.py
 import re
-import typer
 from functools import reduce
+
+
+# variables
+file_path = 'declaration.txt'
 
 
 def read_file(file_path):
@@ -32,15 +35,8 @@ def reduce_word_counts(mapped_words):
     return reduce(reducer, mapped_words, {})
 
 
-def main(file_path: str = 'declaration.txt'):
-    """Logic of this main function should be auto-generated for local target by yep"""
-    words = read_file(file_path)
-    mapped_words = map_words_to_counts(words)
-    word_counts = reduce_word_counts(mapped_words)
-    
+def print_word_counts(word_counts):
+    """Print word counts."""
     for word, count in word_counts.items():
         print(f"{word}: {count}")
 
-
-if __name__ == "__main__":
-    typer.run(main)
