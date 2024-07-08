@@ -41,7 +41,7 @@ class LocalTarget(BaseTarget):
             f.write(f"from {mod_name} import {step_functions}\n") 
             f.write(f"\n\ndef run(vars):\n")
             for index, task in enumerate(yep_pipeline.tasks):
-                # TODO: below logic gets complicated when we substitute variables
+                # TODO: below logic gets complicated when we want to substitute arbitrary variables
                 print(f"\tTask: {task['name']} with args: {task['args']}")
                 is_first = index == 0
                 is_last = index == len(yep_pipeline.tasks) - 1
