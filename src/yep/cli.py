@@ -20,11 +20,14 @@ def init(project_path: str = ''):
 
 
 @app.command()
-def wrap(project_path: str = '', target: str = 'local'):
+def wrap(project_path: str = '', pipeline: str = '*', target: str = 'local', update: bool = False):
     """Generate pipeline wrapper for target."""
-    print(f"Generate pipeline wrapper for {target}.")
     project = YepProject(_get_project_path(project_path))
-    project.wrap(target)
+    if pipeline == '*':
+        project.wrap_all_pipelines(update=update)
+    else:
+        # todo: add new target to `.yep/project.toml` under the pipeline section
+        project.wrap_pipeline(pipeline, target, update=update)
 
 
 @app.command()

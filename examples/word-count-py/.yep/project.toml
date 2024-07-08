@@ -1,0 +1,8 @@
+[project]
+name = "word-count-py"
+
+[project.pipelines.word_count_py]
+# This is assumed to be the entry point of the pipeline
+file_path = "word_count.py" # can be auto-detected, relative to project root
+# What pipelines will yep generate as what targets?
+targets = ["local"] # default is ["local"]

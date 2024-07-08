@@ -17,16 +17,14 @@ class CodeStructureVisitor(ast.NodeVisitor):
 class PythonReflector(BaseReflector):
     """Python reflector implementation."""
 
-    def parse(self, pipeline_path):
+    def parse(self):
         """Parse python source code in pipeline_path."""
-        with open(pipeline_path, 'r') as file:
+        with open(self.yep_pipeline.file_path, 'r') as file:
             source_code = file.read()
-        return ast.parse(source_code, filename=pipeline_path)
+        return ast.parse(source_code, filename=self.yep_pipeline.file_path)
 
-    def analyze(self, pipeline_path):
+    def analyze(self):
         """Analyze the parsed python source code to deduce its main structure."""
-        parsed_tree = self.parse(pipeline_path)
+        parsed_tree = self.parse()
         visitor = CodeStructureVisitor()
         visitor.visit(parsed_tree)
-
-
