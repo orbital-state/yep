@@ -4,14 +4,27 @@ import ast
 
 class CodeStructureVisitor(ast.NodeVisitor):
 
+    def __init__(self):
+        self.current_depth = 0
+
+    def generic_visit(self, node):
+        # print(f'{"    " * self.current_depth}Node: {type(node).__name__} at depth {self.current_depth}')
+        self.current_depth += 1
+        super().generic_visit(node)
+        self.current_depth -= 1
+
     def visit_FunctionDef(self, node):
-        print(f'Function name: {node.name}')
+        args = [arg.arg for arg in node.args.args]
+        print(f'{"    " * self.current_depth}Function name: {node.name} with args: {args} at depth {self.current_depth}')
+        self.current_depth += 1
         self.generic_visit(node)
+        self.current_depth -= 1
 
     def visit_ClassDef(self, node):
-        print(f'Class name: {node.name}')
+        print(f'{"    " * self.current_depth}Class name: {node.name} at depth {self.current_depth}')
+        self.current_depth += 1
         self.generic_visit(node)
-
+        self.current_depth -= 1
 
 
 class PythonReflector(BaseReflector):
