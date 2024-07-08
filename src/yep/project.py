@@ -58,3 +58,15 @@ class YepProject:
         for pipeline_name, pipeline in config['project']['pipelines'].items():
             for target in pipeline['targets']:
                 self.wrap_pipeline(pipeline_name, target, update)
+
+    def run_pipeline(self, pipeline_name, target: str, vars: dict):
+        """Run pipeline on target."""
+        config = self.load_config()
+        pipeline = config['project']['pipelines'][pipeline_name]
+        assert self.yep_folder_path().exists(), f"Project '{self.name}' not initialized."
+        print(f"Run pipeline `{pipeline_name}` on target `{target}`.")
+        target_folder = self.targets_folder_path() / target
+        target_class = get_target_cls(target)
+        target_instance = target_class(self._location_path, target_folder)
+        pipeline_file_path = self._location_path / pipeline['file_path']
+        return target_instance.run_pipeline(pipeline_name, config, pipeline_file_path, vars)

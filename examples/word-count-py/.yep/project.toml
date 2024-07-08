@@ -1,5 +1,6 @@
 [project]
 name = "word-count-py"
+description = "A simple word count pipeline in Python."
 
 [project.pipelines.word_count_py]
 # This is assumed to be the entry point of the pipeline

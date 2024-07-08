@@ -1,4 +1,4 @@
-# word_count.py
+"""A simple word count pipeline in Python."""
 import re
 from functools import reduce
 

@@ -1,5 +1,6 @@
 """Local target implementation."""
 
+import importlib
 import os
 from pathlib import Path
 from .base import BaseTarget
@@ -67,3 +68,17 @@ class LocalTarget(BaseTarget):
             f.write(f"    print(run({{}}))\n")
         print(f"Wrapper code written to: {wrapper_path}")
         return wrapper_path
+
+    def run_pipeline(self, pipeline_name, config, pipeline_file_path, vars):
+        """Run pipeline on local target."""
+        # append current working directory to sys.path
+        import sys
+        sys.path.append(os.getcwd())
+        # exec file with wrapper module
+        wrapper_path = self.target_folder / f"{pipeline_name}_wrapper.py"
+        spec=importlib.util.spec_from_file_location(f"{pipeline_name}_wrapper", wrapper_path)
+        # creates a new module based on spec
+        wrapper = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(wrapper)
+        # run pipeline
+        return wrapper.run(vars)
