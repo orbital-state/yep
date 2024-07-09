@@ -45,6 +45,9 @@ class LocalTarget(BaseTarget):
             # Import all functions from pipeline file
             f.write(f"from {mod_name} import {step_functions}\n") 
             f.write(f"\n\ndef run(vars):\n")
+            # add default values for vars
+            f.write(f"    defaults = {yep_pipeline.vars}\n")
+            f.write(f"    vars = defaults.update(vars) if vars else defaults\n")
             for index, task in enumerate(yep_pipeline.tasks):
                 # TODO: below logic gets complicated when we want to substitute arbitrary variables
                 print(f"\tTask: {task['name']} with args: {task['args']}")

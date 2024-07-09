@@ -6,6 +6,7 @@ class CodeStructureVisitor(ast.NodeVisitor):
 
     def __init__(self):
         self.current_depth = 0
+        self.variables = dict()
         self.pipeline_tasks = []
 
     def generic_visit(self, node):
@@ -27,7 +28,17 @@ class CodeStructureVisitor(ast.NodeVisitor):
         self.current_depth -= 1
 
     def visit_ClassDef(self, node):
-        print(f'{"    " * self.current_depth}Class name: {node.name} at depth {self.current_depth}')
+        # print(f'{"    " * self.current_depth}Class name: {node.name} at depth {self.current_depth}')
+        self.current_depth += 1
+        self.generic_visit(node)
+        self.current_depth -= 1
+
+    def visit_Assign(self, node):
+        # print(f'{"    " * self.current_depth}Assign at depth {self.current_depth}: {node.value}')
+        if self.current_depth == 1 and len(node.targets) == 1 and isinstance(node.targets[0], ast.Name):
+            # check if constant is a text variable / string
+            if isinstance(node.value, ast.Constant) and isinstance(node.value.value, str):
+                self.variables[node.targets[0].id] = node.value.s
         self.current_depth += 1
         self.generic_visit(node)
         self.current_depth -= 1
@@ -48,3 +59,4 @@ class PythonReflector(BaseReflector):
         visitor = CodeStructureVisitor()
         visitor.visit(parsed_tree)
         self.yep_pipeline.tasks += visitor.pipeline_tasks
+        self.yep_pipeline.vars.update(visitor.variables)
