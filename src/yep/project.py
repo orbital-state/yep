@@ -2,7 +2,7 @@
 import os
 import toml
 from pathlib import Path
-from .targets.factory import get_target_cls
+from .targets.factory import get_target_cls, guess_programming_language
 
 
 class YepProject:
@@ -47,9 +47,10 @@ class YepProject:
         print(f"Generate pipeline wrapper of `{pipeline_name}` for target `{target}`.")
         target_folder = self.targets_folder_path() / target
         os.makedirs(target_folder, exist_ok=True)
-        target_class = get_target_cls(target)
-        target_instance = target_class(self._location_path, target_folder)
         pipeline_file_path = self._location_path / pipeline['file_path']
+        lang = guess_programming_language(str(pipeline_file_path))
+        target_class = get_target_cls(lang, target)
+        target_instance = target_class(self._location_path, target_folder)
         target_instance.generate_wrapper(pipeline_name, config, pipeline_file_path, update)
 
     def wrap_all_pipelines(self, update: bool = False):
@@ -66,7 +67,8 @@ class YepProject:
         assert self.yep_folder_path().exists(), f"Project '{self.name}' not initialized."
         print(f"Run pipeline `{pipeline_name}` on target `{target}`.")
         target_folder = self.targets_folder_path() / target
-        target_class = get_target_cls(target)
-        target_instance = target_class(self._location_path, target_folder)
         pipeline_file_path = self._location_path / pipeline['file_path']
+        lang = guess_programming_language(str(pipeline_file_path))
+        target_class = get_target_cls(lang, target)
+        target_instance = target_class(self._location_path, target_folder)
         return target_instance.run_pipeline(pipeline_name, config, pipeline_file_path, vars)

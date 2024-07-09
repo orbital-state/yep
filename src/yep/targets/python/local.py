@@ -3,8 +3,8 @@
 import importlib
 import os
 from pathlib import Path
-from .base import BaseTarget
-from ..reflectors.pipeline import YepPipeline
+from ..base import BaseTarget
+from ...reflectors.pipeline import YepPipeline
 
 
 class LocalTarget(BaseTarget):
