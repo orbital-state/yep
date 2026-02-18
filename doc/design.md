@@ -5,6 +5,25 @@
 
 You write a “declaration” file in a general-purpose language (currently Python is implemented) as a sequence of small routines. yep reflects over that code, deduces a call chain, then generates a target-specific wrapper (e.g. local execution) that runs the chain.
 
+# Vision
+The long-term goal of yep is bigger than “a linear chain of functions”. The core bet is that **general-purpose (GP) languages are a better place to express step logic**, while the **pipeline layer stays focused on topology and execution**.
+
+In practice that means:
+
+- Step complexity can live where GP languages are strongest: modules, classes, libraries, unit tests, type checkers, refactoring tools, and IDE support.
+- The pipeline declaration focuses on the higher-level structure: which steps exist, how they connect, and what contracts they expose (inputs/outputs/side effects), without duplicating that in a separate YAML graph.
+- “Targets” become the main axis of growth: the *same declared topology* should be runnable locally for prototyping, and also runnable on richer execution backends for production workloads.
+
+As targets expand beyond `local`, pipelining shifts from “run this script” to “materialize this topology on a platform”:
+
+- **Data/ML**: the declaration can drive execution on Spark/Databricks-like platforms, where steps map to jobs, stages, and persisted datasets.
+- **DevOps / platform automation**: steps become idempotent operations (provision, deploy, configure, validate), and the pipeline becomes an auditable runbook with retries, approvals, and environment promotion.
+- **Kubernetes / microservices**: the pipeline can describe a fleet of services and their dependencies, where targets generate deployment artifacts, apply them, and scale components on demand.
+
+This document describes the current minimal implementation, but the intent is for yep to grow into a multi-language, multi-target engine where topology is inferred/declared in code and execution is “plugged in” via targets.
+
+For a deeper exploration of possible target families and integrations, see `doc/targets.md`.
+
 ## What exists in this repo today
 At a high level, yep is split into:
 
@@ -20,6 +39,20 @@ The current implementation is intentionally minimal:
 
 - Implemented reflector(s): Python AST reflector.
 - Implemented target(s): Python “local” target.
+
+## Targets: from wrappers to platforms
+Today, a “target” is implemented as code generation + execution (generate a wrapper, then run it). As yep grows, targets become the main mechanism for shifting the same declared pipeline across environments:
+
+- **Developer/local**: in-process runs for fast iteration.
+- **Batch/job runners**: container jobs, schedulers, cron-style automation.
+- **Data engineering**: Spark/Databricks-style distributed execution, parameterized notebooks.
+- **Workflow orchestrators**: generate DAGs/workflows for platforms like Airflow/Argo-style systems.
+- **DevOps automation**: idempotent tasks, approvals, promotion, policy.
+- **Service fleets**: materialize a connected topology as deployable services (e.g., Kubernetes).
+- **Agentic workflows**: LLM/tool orchestration and human-in-the-loop execution.
+- **Experimental UI prototyping**: clickable flows, “logical apps”, block-based composition (Zapier/n8n/KNIME-like).
+
+In addition to “native targets”, yep can grow a special category of **integration targets** (adapters) that translate a yep pipeline into an existing engine’s primitives and then delegate scheduling/operations to that system.
 
 ## Core terms
 
@@ -81,7 +114,7 @@ The chaining is based on a simple convention:
 
 That is: if the next step is `map_words_to_counts(words)`, then the wrapper captures the previous output into `words`.
 
-This works well for “linear” pipelines where each step returns exactly what the next step needs.
+This works well for the **current minimal implementation**, which assumes a single linear chain and a “pass-the-output-forward” convention. It is not the full vision: over time, yep should support richer topologies (branch/join), different data contracts between steps (not only positional pass-through), and execution semantics that depend on the selected target.
 
 ## Example: word count (Python)
 The example in `examples/word-count-py/word_count.py` defines these steps:
@@ -154,6 +187,19 @@ The current implementation is deliberately small; these constraints are importan
 - **Defaults are limited**: only top-level string assignments are reflected into `vars`.
 - **Language/target support is small**: Python reflector + Python local target are registered; Java support is present only as an example at the moment.
 
+## Metadata layers (how targets get enough information)
+As targets expand, they need more than the current minimal call-chain inference. Common requirements include: retries/timeouts, resource allocation, parallelism/fan-out, caching/materialization, and error-handling.
+
+The design direction is to add a metadata layer **without abandoning GP languages**. Potential mechanisms (language/target dependent) include:
+
+- structured comments / docstrings
+- decorators (Python) / annotations (Java) / attributes (Rust)
+- typed step wrappers (Step objects)
+- sidecar metadata files used as overlays
+- naming/signature conventions
+- explicit topology APIs for non-linear graphs
+- target-level policy overlays (profiles, defaults)
+
 ## Why this approach (vs YAML)
 The design goal is to reduce duplication:
 
@@ -170,9 +216,10 @@ That makes pipelines:
 Based on the current structure (reflector/target factories), the intended growth path looks like:
 
 - Add additional reflectors (e.g. Java AST/bytecode analysis) to extract step graphs.
-- Add additional targets (containers, distributed backends, remote execution).
-- Improve the pipeline model (`YepPipeline`) to represent non-linear graphs.
-- Expand `vars` extraction beyond simple string constants.
+- Add additional targets (batch runners, orchestrators, distributed data/ML, automation, service fleets).
+- Add integration targets (adapters) that translate to existing workflow engines and CI/CD platforms.
+- Improve the pipeline model (`YepPipeline`) to represent non-linear graphs and richer step contracts.
+- Expand `vars` extraction and metadata handling beyond simple string constants.
 
 ---
 
