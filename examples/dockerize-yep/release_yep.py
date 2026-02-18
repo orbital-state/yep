@@ -13,9 +13,10 @@ from __future__ import annotations
 
 import os
 import shlex
-import subprocess
 from pathlib import Path
 from typing import Any
+
+import sh
 
 
 # Reflected defaults (strings only)
@@ -37,14 +38,6 @@ def _parse_bool(value: Any) -> bool:
     return str(value).strip().lower() in {"1", "true", "yes", "y", "on"}
 
 
-def _run(cmd: list[str], *, cwd: str | None, env: dict[str, str] | None, dry: bool) -> None:
-    rendered = " ".join(shlex.quote(p) for p in cmd)
-    print(f"$ {rendered}")
-    if dry:
-        return
-    subprocess.run(cmd, cwd=cwd, env=env, check=True)
-
-
 def docker_build(
     image_repo: str,
     image_tag: str,
@@ -58,20 +51,14 @@ def docker_build(
     image_tag = str(image_tag).strip()
     image_ref = f"{image_repo}:{image_tag}"
 
-    _run(
-        [
-            "docker",
-            "build",
-            "-f",
-            dockerfile,
-            "-t",
-            image_ref,
-            context_dir,
-        ],
-        cwd=None,
-        env=None,
-        dry=_parse_bool(dry_run),
-    )
+    context_dir_abs = str(Path(str(context_dir)).resolve())
+    dockerfile_abs = str(Path(str(dockerfile)).resolve())
+    dry = _parse_bool(dry_run)
+
+    cmd = ["docker", "build", "-f", dockerfile_abs, "-t", image_ref, context_dir_abs]
+    print(f"$ {' '.join(shlex.quote(p) for p in cmd)}")
+    if not dry:
+        sh.docker("build", "-f", dockerfile_abs, "-t", image_ref, context_dir_abs)
 
     # Pass through values needed by later steps.
     return image_ref, image_repo, publish_latest, dry_run
@@ -94,19 +81,29 @@ def docker_login(image_ref: str, image_repo: str, publish_latest: str, dry_run: 
 
     cmd = ["docker", "login", "-u", username, "--password-stdin"]
     print(f"$ {' '.join(shlex.quote(p) for p in cmd)}")
-    subprocess.run(cmd, input=token.encode("utf-8"), check=True)
+    sh.docker("login", "-u", username, "--password-stdin", _in=f"{token}\n")
     return image_ref, image_repo, publish_latest, dry_run
 
 
 def docker_push(image_ref: str, image_repo: str, publish_latest: str, dry_run: str) -> str:
     """Push the image, and optionally tag/push :latest."""
     dry = _parse_bool(dry_run)
-    _run(["docker", "push", image_ref], cwd=None, env=None, dry=dry)
+    cmd = ["docker", "push", image_ref]
+    print(f"$ {' '.join(shlex.quote(p) for p in cmd)}")
+    if not dry:
+        sh.docker("push", image_ref)
 
     if _parse_bool(publish_latest):
         latest_ref = f"{str(image_repo).strip()}:latest"
-        _run(["docker", "tag", image_ref, latest_ref], cwd=None, env=None, dry=dry)
-        _run(["docker", "push", latest_ref], cwd=None, env=None, dry=dry)
+        tag_cmd = ["docker", "tag", image_ref, latest_ref]
+        print(f"$ {' '.join(shlex.quote(p) for p in tag_cmd)}")
+        if not dry:
+            sh.docker("tag", image_ref, latest_ref)
+
+        push_latest_cmd = ["docker", "push", latest_ref]
+        print(f"$ {' '.join(shlex.quote(p) for p in push_latest_cmd)}")
+        if not dry:
+            sh.docker("push", latest_ref)
         print(f"Pushed: {image_ref} and {latest_ref}")
     else:
         print(f"Pushed: {image_ref}")
