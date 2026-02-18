@@ -1,0 +1,11 @@
+[project]
+name = "dockerize-yep"
+description = "Build and publish the yep Docker image to Docker Hub using yep itself."
+
+[project.pipelines.dockerize_yep]
+file_path = "release_yep.py"
+targets = ["local", "github-actions"]
+
+# Where the github-actions target should write the workflow file.
+# Path is relative to this example folder.
+workflow_path = "../../.github/workflows/yep-dockerhub.yml"

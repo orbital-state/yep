@@ -18,7 +18,9 @@ class CodeStructureVisitor(ast.NodeVisitor):
     def visit_FunctionDef(self, node):
         args = [arg.arg for arg in node.args.args]
         # print(f'{"    " * self.current_depth}Function name: {node.name} with args: {args} at depth {self.current_depth}')
-        if self.current_depth == 1 and node.name != 'main':
+        # Only treat "public" top-level functions as pipeline steps.
+        # This lets users keep helper utilities (e.g. _run, _parse_bool) in the same module.
+        if self.current_depth == 1 and node.name != 'main' and not node.name.startswith('_'):
             self.pipeline_tasks.append({
                 'name': node.name,
                 'args': args

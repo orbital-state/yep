@@ -1,0 +1,41 @@
+name: yep dockerhub publish
+
+on:
+  push:
+    branches: ["main"]
+    tags: ["*"]
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install yep
+        run: python -m pip install -e .
+
+      - name: Wrap pipelines (local + github-actions)
+        working-directory: examples/dockerize-yep
+        run: yep wrap --update
+
+      - name: Build + push yep image (via local target)
+        working-directory: examples/dockerize-yep
+        env:
+          DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
+          DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          publish_latest=false
+          if [[ "${{ github.ref }}" == "refs/heads/main" ]]; then
+            publish_latest=true
+          fi
+
+          yep run --target local --vars \
+            image_repo:orbitalstate/yep,\
+            image_tag:${{ github.sha }},\
+            publish_latest:$publish_latest,\
+            dry_run:false

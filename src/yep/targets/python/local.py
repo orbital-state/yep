@@ -62,7 +62,14 @@ class LocalTarget(BaseTarget):
                 print(f"\tNext arg names: {next_arg_names}")
                 if len(next_arg_names) > 0:
                     if is_first:
-                        f.write(f"    {', '.join(next_arg_names)} = {task['name']}(**vars)\n")
+                        # Pass only args the first step actually declares.
+                        # This keeps pipelines clean even if vars/defaults contain extra keys.
+                        f.write(f"    __first_arg_names = {task['args']}\n")
+                        f.write("    __missing = [n for n in __first_arg_names if n not in vars]\n")
+                        f.write("    if __missing:\n")
+                        f.write("        raise KeyError(f\"Missing required vars for first step: {__missing}\")\n")
+                        f.write("    __first_args = {n: vars[n] for n in __first_arg_names}\n")
+                        f.write(f"    {', '.join(next_arg_names)} = {task['name']}(**__first_args)\n")
                     else:
                         f.write(f"    {', '.join(next_arg_names)} = {task['name']}({', '.join(task['args'])})\n")
                 else:

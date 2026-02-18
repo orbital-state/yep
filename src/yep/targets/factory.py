@@ -5,6 +5,7 @@ _registered_languages = {
         'extension': 'py',
         'targets': {
             'local': 'yep.targets.python.local:LocalTarget',
+            'github-actions': 'yep.targets.python.github_actions:GithubActionsTarget',
         }
     }
 }
