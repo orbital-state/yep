@@ -4,7 +4,7 @@ from word_count import read_file, map_words_to_counts, reduce_word_counts, print
 
 def run(vars):
     defaults = {'file_path': 'declaration.txt'}
-    vars = defaults.update(vars) if vars else defaults
+    vars = {**defaults, **(vars or {})}
     words = read_file(**vars)
     mapped_words = map_words_to_counts(words)
     word_counts = reduce_word_counts(mapped_words)

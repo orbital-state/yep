@@ -39,4 +39,3 @@ def print_word_counts(word_counts):
     """Print word counts."""
     for word, count in word_counts.items():
         print(f"{word}: {count}")
-
