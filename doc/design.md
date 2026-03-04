@@ -5,6 +5,18 @@
 
 You write a “declaration” file in a general-purpose language (currently Python is implemented) as a sequence of small routines. yep reflects over that code, deduces a call chain, then generates a target-specific wrapper (e.g. local execution) that runs the chain.
 
+## Design principles (motto)
+
+The guiding search in yep’s design is: **wire chain steps in the most natural way**.
+
+Practically, that means:
+
+- Prefer **plain code** as the source of truth (functions, signatures, return values), not a parallel DSL.
+- Prefer **conventions you can read off the file** (order + signature) over hidden configuration.
+- Keep the “magic” explainable: wrappers should be readable; `wrap` should be able to report the inferred wiring.
+- When conventions aren’t enough, add the **smallest explicit hint** (e.g., “export this output as `image_ref`”) rather than introducing a heavy framework parameter or a full graph DSL.
+- Targets should change *where/how* the same declared topology runs, without forcing users to rewrite step logic.
+
 # Vision
 The long-term goal of yep is bigger than “a linear chain of functions”. The core bet is that **general-purpose (GP) languages are a better place to express step logic**, while the **pipeline layer stays focused on topology and execution**.
 
