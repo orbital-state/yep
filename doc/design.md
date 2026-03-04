@@ -18,7 +18,7 @@ Practically, that means:
 - Targets should change *where/how* the same declared topology runs, without forcing users to rewrite step logic.
 
 # Vision
-The long-term goal of yep is bigger than “a linear chain of functions”. The core bet is that **general-purpose (GP) languages are a better place to express step logic**, while the **pipeline layer stays focused on topology and execution**.
+The long-term goal of yep is bigger than “a linear chain of functions”. The core bet is that **general-purpose (GP) languages are a better place to express step (chain) logic**, while the **pipeline layer stays focused on topology and execution**.
 
 In practice that means:
 
