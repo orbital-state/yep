@@ -2,6 +2,12 @@
 
 Yet another Engine for Pipelines
 
+## Documentation
+
+- [Hello World tutorial](doc/hello-world.md)
+- [Design overview](doc/design.md)
+- [Targets (direction + intent)](doc/targets.md)
+
 ## Installation
 
 with pip:
