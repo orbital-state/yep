@@ -1,0 +1,7 @@
+[project]
+name = "hello-world"
+description = "Minimal yep pipeline example"
+
+[project.pipelines.hello_world]
+file_path = "hello.py"
+targets = ["local"]

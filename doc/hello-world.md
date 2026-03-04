@@ -85,6 +85,12 @@ Today’s `local` target uses a simple convention to build a linear call chain:
 - The **first** step is called with values pulled from `vars` (defaults + CLI overrides).
 - For every step after that, yep wires outputs to inputs by looking at the **next step’s signature**.
 
+Two important clarifications:
+
+- There is **no type-based matching** in the current implementation.
+- There is **no ambiguity** between “take from defaults” vs “take from previous output”:
+  only the **first** step reads from `vars`. Every later step’s inputs come from variables produced by earlier steps.
+
 More concretely: for a step at position *i*, yep looks at the *next* step at position *i+1*.
 
 - Let the next step’s parameter names be `[p1, p2, ...]`.
@@ -113,6 +119,10 @@ vars = {**defaults, **(vars or {})}
 text = make_message(message=vars["message"])
 return show(text)
 ```
+
+Notice that `text` is *not* a default var. It’s created by the wrapper specifically to hold the output of `make_message`, because the next step is `show(text)`.
+
+If you want a later step to also receive a value from defaults/CLI vars, you must make that value part of the data you pass forward (i.e., “thread it through” explicitly), for example by returning it from an earlier step.
 
 If the next step had two parameters like `def show(prefix, text): ...`, then the previous step would need to return two values, and the wrapper would do `prefix, text = previous_step(...)`.
 
